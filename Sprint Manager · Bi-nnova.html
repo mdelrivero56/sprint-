@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sprint Manager · Bi-nnova</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f5f9;--card:#fff;--tx:#14213d;--mu:#64708a;--bd:#dde3ee;--pr:#1e3a8a;--ac:#c9a227;--ok:#2f855a;--bad:#c53030;--in:#eef2f9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1426;--card:#142038;--tx:#e8edf8;--mu:#93a1bf;--bd:#26365a;--pr:#6b8cf0;--in:#0f1a30}}
+:root[data-theme="dark"]{--bg:#0c1426;--card:#142038;--tx:#e8edf8;--mu:#93a1bf;--bd:#26365a;--pr:#6b8cf0;--in:#0f1a30}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14.5px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}h2{font-size:16px;margin:0 0 8px}small,.mu{color:var(--mu)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(20,33,61,.07)}header.top{background:#13255c;color:#fff;padding:14px 16px}header.top small{color:#b8c4e6}header.top .btn{background:transparent;color:#fff;border-color:#4a5f9e}.kpi small{text-transform:uppercase;letter-spacing:.4px;font-size:11px}.ch{border-radius:10px;padding:1px 9px;font-size:12px;font-weight:600}.g{background:#dcf2e5;color:#1d6b43}.n{background:#e6eaf3;color:#475572}.r{background:#fbe3e3;color:#9b2c2c}.note{border-left:4px solid var(--ac);background:var(--in);padding:8px 10px;border-radius:4px;margin-bottom:12px}.li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)}@media print{nav,header,.noprint{display:none!important}}
+nav{display:flex;gap:6px;overflow-x:auto;margin:12px 0}
+nav button,.btn{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:7px 12px;cursor:pointer;font:inherit;white-space:nowrap}
+nav button.on,.btn.p{background:var(--pr);color:#fff;border-color:var(--pr)}[data-theme=dark] .btn.p,[data-theme=dark] nav button.on{color:#0c1426}
+.btn.s{padding:2px 8px;font-size:13px}.btn.d{color:var(--bad)}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--in);border:1px solid var(--bd);border-radius:8px;padding:7px;max-width:100%}
+textarea{width:100%;min-height:90px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.row>label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:2px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.kpi{background:var(--in);border-radius:10px;padding:10px}.kpi b{display:block;font-size:22px}
+.bar{height:8px;background:var(--in);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pr)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.col{background:var(--in);border-radius:10px;padding:8px;min-height:120px}.col h3{font-size:13px;margin:0 0 8px;color:var(--mu)}
+.it{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px;margin-bottom:8px}
+.it .t{font-weight:600}.pt{background:var(--ac);color:#222;border-radius:10px;padding:0 7px;font-size:12px;font-weight:700}
+.it .a{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.tbl{width:100%;border-collapse:collapse}.tbl td,.tbl th{padding:6px;border-bottom:1px solid var(--bd);text-align:left}
+.scroll{overflow-x:auto}svg{max-width:100%;height:auto}
+.tag{font-size:12px;color:var(--mu)}
+</style></head><body><header class="top"><div class="row" style="justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto"><div><h1>Sprint Manager</h1><small>Seguimiento ágil · Coordinación de Política Digital · Complemento de Bi-nnova</small></div><div class="row" style="align-items:center"><small id="st"></small><button class="btn" onclick="A.exp()">Exportar</button><button class="btn" onclick="$('#imp').click()">Importar</button><input id="imp" type="file" accept=".json" hidden onchange="A.imp(this)"></div></div></header><main><nav id="nav"></nav><div id="v"></div></main>
+<script>
+const $=s=>document.querySelector(s),K='sprint-binnova-v1';
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DEPTS=['Desarrollo de Software','Autoridad Certificadora','Estrategias Digitales'];
+const COLS=[['todo','Por hacer'],['doing','En progreso'],['blocked','Bloqueado'],['done','Hecho']];
+const PRJ=['Bolsa de Trabajo','Figura CPD','Sistema de citas AC','Minuta y Lista de Asistencia','App lanzamiento: menú de firmas','CPD Academy','CPMS 3.0','Denuncias – Comité de Ética','SITA 3.1','Portal de Gobierno del Estado','Gestor de Folios','Elecciones'];
+// ===== CONFIGURACIÓN COMPARTIDA =====
+// Pega aquí la URL de tu Firebase Realtime Database para que TODO el equipo se conecte solo.
+// Ejemplo: const DB_URL='https://mi-proyecto-default-rtdb.firebaseio.com';
+const DB_URL='';
+const ls=(k,v)=>{try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){}};
+const arr=x=>Array.isArray(x)?x:(x&&typeof x=='object'?Object.values(x):[]);
+function norm(d){d=d&&typeof d=='object'?d:{};d.sprints=arr(d.sprints).map(s=>({...s,items:arr(s.items),retro:s.retro||{bien:'',mejorar:'',acc:''}}));d.backlog=arr(d.backlog);d.projects=arr(d.projects).map(p=>({...p,ms:arr(p.ms),rk:arr(p.rk),vw:arr(p.vw),dc:arr(p.dc)}));d.topics=arr(d.topics).map(t=>({...t,posts:arr(t.posts)}));return d}
+let S;try{S=JSON.parse(ls(K))}catch(e){}
+S=S||{sprints:[],backlog:[],tab:'board'};
+let FD=0;const ST={ready:0,dirty:0,err:'',ver:0,timer:null,pending:0};
+const DBU=()=>DBH?'db':'';
+const TPL={lms:{m:['Alcance y requerimientos','Estructura de cursos y rutas','Carga de contenidos','Piloto con usuarios','Lanzamiento'],r:['Contenido no listo a tiempo','Baja adopción de usuarios']},den:{m:['Flujo de atención definido','Canal de recepción habilitado','Protocolo de confidencialidad','Pruebas del sistema','Capacitación al comité'],r:['Seguridad y confidencialidad de la información','Decisiones pendientes del comité']}};
+const NP=(id,name,note)=>({id,name,goal:'',pct:0,ms:[],rk:[],vw:[],dc:[],note});
+const DEF_P=()=>[NP('lms','LMS · CPD Academy',''),NP('den','Denuncias · Comité de Ética e Igualdad de Género','Confidencial: registra solo el avance del sistema, nunca datos de casos ni de personas involucradas.')];
+function ensure(){S=norm(S);if(!S.projects.length)S.projects=DEF_P();if(!S.topics.length)S.topics=[{id:'gen',name:'General',desc:'Ideas, sugerencias y opiniones del equipo',posts:[]}];if(!S.projects.some(p=>p.id==S.pid))S.pid=S.projects[0].id;if(!S.topics.some(t=>t.id==S.tid))S.tid=S.topics[0].id;S.tab=S.tab||'board'}
+ensure();
+const lsSave=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const save=()=>{S._ts=Date.now();lsSave();push()};
+const editing=()=>/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||'');
+function status(){const e=$('#st');if(!e)return;e.textContent=!DBU()?'Solo en este navegador':ST.err?'⚠ '+ST.err:ST.dirty?'Guardando…':'☁ Sincronizado'}
+let DBH=null,DOC=null;
+function push(){if(!DBH||!ST.ready)return;ST.dirty=1;ST.ver++;clearTimeout(ST.timer);ST.timer=setTimeout(flush,700);status()}
+async function flush(){const v=ST.ver,o=JSON.parse(JSON.stringify(S));['tab','pid','tid'].forEach(k=>delete o[k]);
+ try{await DOC.set(o);if(v==ST.ver)ST.dirty=0;ST.err=''}
+ catch(e){ST.dirty=0;ST.err=(e&&e.code=='invalid_argument')?'Solo lectura: no tienes permiso para editar':'No se pudo guardar en la nube';}status()}
+function applyRemote(d){const k={tab:S.tab,pid:S.pid,tid:S.tid};S=norm(d);S.tab=k.tab;S.pid=k.pid;S.tid=k.tid;ensure();lsSave();if(editing()||FD)ST.pending=1;else R()}
+async function pull(){}
+async function initDb(){try{const c=window.claude&&await window.claude.use('db');if(!c)return;DBH=c;DOC=c.doc('app/main');
+ DOC.onSnapshot(snap=>{ST.err='';
+  if(!snap.exists){if(!ST.ready){ST.ready=1;S._ts=S._ts||Date.now();lsSave();push()}}
+  else{const d=JSON.parse(JSON.stringify(snap.data()));const first=!ST.ready;ST.ready=1;if(ST.dirty){status();return}
+   const rt=d._ts||0,lt=S._ts||0;if(first||rt>lt)applyRemote(d)}
+  status()},e=>{ST.err='Sin conexión con la base compartida';status()});status()}catch(e){}}
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#v')&&!e.target.hasAttribute('oninput'))FD=1});
+document.addEventListener('focusout',()=>{if(ST.pending&&!FD)setTimeout(()=>{if(ST.pending&&!editing())R()},300)});
+
+const uid=()=>Math.random().toString(36).slice(2,9),today=()=>new Date().toISOString().slice(0,10);
+const act=()=>S.sprints.find(s=>s.status==='active'),sum=a=>a.reduce((x,i)=>x+i.pts,0);
+const addD=(d,n)=>{const x=new Date(d+'T12:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)};
+const wdays=(a,b)=>{const r=[];for(let d=a;d<=b;d=addD(d,1)){const w=new Date(d+'T12:00').getDay();if(w&&w<6)r.push(d)}return r};
+const closed=()=>S.sprints.filter(s=>s.status==='closed');
+const avgVel=()=>{const c=closed();return c.length?Math.round(c.reduce((x,s)=>x+s.velocity,0)/c.length):0};
+const sel=(id,arr,v)=>`<select id="${id}">${arr.map(o=>`<option ${o==v?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+const TABS=[['board','Tablero'],['plan','Planeación'],['proj','Proyectos y opiniones'],['topics','Temas del equipo'],['metrics','Métricas'],['close','Review y Retro'],['hist','Historial'],['sync','Compartir']];
+
+const A={
+ tab(t){S.tab=t;lsSave();R()},
+ newSprint(){const n=$('#sn').value.trim();if(!n)return alert('Ponle nombre al sprint');
+  S.sprints.push({id:uid(),name:n,goal:$('#sg').value,dept:$('#sd').value,start:$('#ss').value,end:$('#se').value,status:'active',items:[],review:'',retro:{bien:'',mejorar:'',acc:''}});S.tab='plan';save();R()},
+ add(){const t=$('#it').value.trim();if(!t)return;S.backlog.push({id:uid(),title:t,project:$('#ip').value,owner:$('#io').value,pts:+$('#ipt').value,status:'todo'});save();R()},
+ toSprint(id){const a=act(),i=S.backlog.findIndex(x=>x.id==id);if(!a||i<0)return;const [x]=S.backlog.splice(i,1);x.status='todo';a.items.push(x);save();R()},
+ toBack(id){const a=act(),i=a.items.findIndex(x=>x.id==id),[x]=a.items.splice(i,1);x.status='todo';delete x.doneAt;S.backlog.push(x);save();R()},
+ move(id,d){const x=act().items.find(i=>i.id==id),k=COLS.findIndex(c=>c[0]==x.status),n=COLS[k+d];if(!n)return;x.status=n[0];n[0]=='done'?x.doneAt=today():delete x.doneAt;save();R()},
+ del(id){if(!confirm('¿Eliminar?'))return;S.backlog=S.backlog.filter(x=>x.id!=id);const a=act();if(a)a.items=a.items.filter(x=>x.id!=id);save();R()},
+ note(f,v){const a=act();if(!a)return;f=='review'?a.review=v:a.retro[f]=v;save()},
+ close(){const a=act();if(!confirm('¿Cerrar el sprint? Lo no terminado regresa al backlog.'))return;
+  a.committed=sum(a.items);a.velocity=sum(a.items.filter(i=>i.status=='done'));a.closedAt=today();a.status='closed';
+  a.items.filter(i=>i.status!='done').forEach(i=>{i.status='todo';S.backlog.push(i)});a.items=a.items.filter(i=>i.status=='done');S.tab='hist';save();R()},
+ copy(){const a=act(),m={};a.items.forEach(i=>(m[i.project]=m[i.project]||[]).push(i));
+  const t=Object.entries(m).map(([p,l])=>{const tot=sum(l),dn=sum(l.filter(i=>i.status=='done'));return `${p} — avance del sprint ${Math.round(dn/tot*100)}% (${dn}/${tot} pts)\nHecho: ${l.filter(i=>i.status=='done').map(i=>i.title).join('; ')||'—'}\nPendiente: ${l.filter(i=>i.status!='done').map(i=>i.title).join('; ')||'—'}`}).join('\n\n');
+  navigator.clipboard?.writeText(t).then(()=>alert('Copiado. Pégalo en la descripción de avance de Bi-nnova.'),()=>prompt('Copia:',t))},
+ pj(){return S.projects.find(p=>p.id==S.pid)},
+ pick(id){S.pid=id;lsSave();R()},
+ set(f,v){A.pj()[f]=f=='pct'?+v:v;save();if(f=='pct')R()},
+ tpl(){const p=A.pj(),t=TPL[p.id];if(!t)return;p.ms.push(...t.m.map(x=>({t:x,st:0})));p.rk.push(...t.r.map(x=>({t:x})));save();R()},
+ cyc(i){const m=A.pj().ms[i];m.st=(m.st+1)%3;save();R()},
+ addp(k){const g=x=>($('#'+k+x)||{value:''}).value.trim(),o={ms:()=>({t:g('t'),st:0}),rk:()=>({t:g('t')}),vw:()=>({who:g('w'),role:g('r'),tone:$('#vto').value,t:g('t')}),dc:()=>({t:g('t'),who:g('w'),due:$('#dcd').value})}[k]();if(!o.t)return;A.pj()[k].push(o);save();R()},
+ rmp(k,i){A.pj()[k].splice(i,1);save();R()},
+ rep(){const p=A.pj(),T={g:'Positiva',n:'Neutral',r:'Preocupación'},ST=['Pendiente','En curso','Hecho'],t=`${p.name}\nAvance reportado: ${p.pct}%\nObjetivo: ${p.goal||'—'}\n\nHitos:\n${p.ms.map(m=>`- ${m.t}: ${ST[m.st]}`).join('\n')||'—'}\n\nRiesgos:\n${p.rk.map(r=>'- '+r.t).join('\n')||'—'}\n\nPuntos de vista:\n${p.vw.map(v=>`- ${v.who} (${v.role}) [${T[v.tone]}]: ${v.t}`).join('\n')||'—'}\n\nAcuerdos:\n${p.dc.map(d=>`- ${d.t} — ${d.who||'s/r'} ${d.due||''}`).join('\n')||'—'}`;navigator.clipboard?.writeText(t).then(()=>alert('Resumen copiado'),()=>prompt('Copia:',t))},
+ pickT(id){S.tid=id;lsSave();R()},
+ tp(){return S.topics.find(t=>t.id==S.tid)||S.topics[0]},
+ tset(f,v){A.tp()[f]=v;save()},
+ newTopic(){const n=(prompt('Nombre del nuevo tema (ej. Mejoras al proceso, Capacitación…)')||'').trim();if(!n)return;const t={id:uid(),name:n,desc:'',posts:[]};S.topics.push(t);S.tid=t.id;save();R()},
+ renTopic(){const t=A.tp(),n=(prompt('Nuevo nombre del tema',t.name)||'').trim();if(!n)return;t.name=n;save();R()},
+ delTopic(){if(S.topics.length<2)return alert('Debe quedar al menos un tema');const t=A.tp();if(!confirm('¿Eliminar el tema "'+t.name+'" y todas sus opiniones?'))return;S.topics=S.topics.filter(x=>x.id!=t.id);S.tid=S.topics[0].id;save();R()},
+ post(){const w=$('#tw').value.trim(),t=$('#tt').value.trim();if(!w||!t)return alert('Escribe tu nombre y tu comentario');ls(K+'-me',w);A.tp().posts.push({id:uid(),who:w,role:$('#tr').value.trim(),tone:$('#tto').value,t,date:today(),likes:0});save();R()},
+ like(id){const p=A.tp().posts.find(x=>x.id==id);if(p){p.likes=(p.likes||0)+1;save();R()}},
+ delPost(id){if(!confirm('¿Eliminar este comentario?'))return;const t=A.tp();t.posts=t.posts.filter(x=>x.id!=id);save();R()},
+ newProj(){const n=(prompt('Nombre del nuevo proyecto')||'').trim();if(!n)return;const p=NP(uid(),n,'');S.projects.push(p);S.pid=p.id;save();R()},
+ renProj(){const p=A.pj(),n=(prompt('Nuevo nombre del proyecto',p.name)||'').trim();if(!n)return;p.name=n;save();R()},
+ delProj(){if(S.projects.length<2)return alert('Debe quedar al menos un proyecto');const p=A.pj();if(!confirm('¿Eliminar el proyecto "'+p.name+'" con sus hitos, riesgos, opiniones y acuerdos?'))return;S.projects=S.projects.filter(x=>x.id!=p.id);S.pid=S.projects[0].id;save();R()},
+ me(v){ls(K+'-me',v.trim())},
+ conn(){const u=$('#dbu').value.trim().replace(/\/+$/,'');if(!/^https:\/\/.+/.test(u))return alert('La URL debe empezar con https://');ls(K+'-db',u);ST.ready=0;ST.dirty=0;pull(true)},
+ disc(){ls(K+'-db','');ST.ready=0;ST.err='';R()},
+ exp(){const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),u=URL.createObjectURL(b),l=document.createElement('a');l.href=u;l.download='sprints-binnova.json';l.click()},
+ imp(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const k=S.tab;S=JSON.parse(t);ensure();S.tab=k;save();R()}catch(e){alert('Archivo inválido')}})}
+};
+
+function head(a){const t=sum(a.items),d=sum(a.items.filter(i=>i.status=='done')),left=Math.max(0,wdays(today(),a.end).length),p=t?Math.round(d/t*100):0;
+ return `<div class="card"><div class="row" style="justify-content:space-between"><div><h2>${esc(a.name)} <small>· ${esc(a.dept)}</small></h2><div class="mu">🎯 ${esc(a.goal)||'Sin objetivo definido'}</div><small>${a.start} → ${a.end}</small></div></div>
+ <div class="kpis" style="margin-top:10px"><div class="kpi"><small>Puntos hechos</small><b>${d}/${t}</b></div><div class="kpi"><small>Avance del sprint</small><b>${p}%</b></div><div class="kpi"><small>Días hábiles restantes</small><b>${left}</b></div><div class="kpi"><small>Bloqueados</small><b>${a.items.filter(i=>i.status=='blocked').length}</b></div></div><div class="bar" style="margin-top:10px"><i style="width:${p}%"></i></div></div>`}
+
+function board(){const a=act();if(!a)return empty();
+ return head(a)+`<div class="cols">${COLS.map(([k,n])=>{const l=a.items.filter(i=>i.status==k);return `<div class="col"><h3>${n} · ${l.length} (${sum(l)} pts)</h3>${l.map(i=>`<div class="it"><div class="t">${esc(i.title)}</div><div class="tag">${esc(i.project)} · ${esc(i.owner)||'sin responsable'} <span class="pt">${i.pts}</span></div><div class="a"><button class="btn s" onclick="A.move('${i.id}',-1)">◀</button><button class="btn s" onclick="A.move('${i.id}',1)">▶</button><button class="btn s" onclick="A.toBack('${i.id}')">↩ backlog</button><button class="btn s d" onclick="A.del('${i.id}')">✕</button></div></div>`).join('')}</div>`}).join('')}</div>`}
+
+function empty(){const s=today();return `<div class="card"><h2>Nuevo Sprint</h2><p class="mu">No hay sprint activo. Define el objetivo y las fechas (lo común: 2 semanas).</p><div class="row"><label>Nombre<input id="sn" placeholder="Sprint 1"></label><label>Departamento${sel('sd',DEPTS)}</label><label>Inicio<input id="ss" type="date" value="${s}"></label><label>Fin<input id="se" type="date" value="${addD(s,13)}"></label></div><label class="mu" style="display:block;margin:8px 0 2px;font-size:12px">Objetivo del Sprint (Sprint Goal)</label><textarea id="sg" style="min-height:60px"></textarea><button class="btn p" style="margin-top:8px" onclick="A.newSprint()">Iniciar sprint</button></div>`}
+
+function plan(){const a=act(),v=avgVel();
+ const form=`<div class="card"><h2>Agregar al Product Backlog</h2><div class="row"><label>Actividad<input id="it" size="28"></label><label>Proyecto<input id="ip" list="pl" value="${esc((S.projects.find(p=>p.id==S.pid)||{}).name||PRJ[0])}"><datalist id="pl">${[...new Set([...S.projects.map(p=>p.name),...PRJ])].map(p=>`<option>${esc(p)}`).join('')}</datalist></label><label>Responsable<input id="io" size="14"></label><label>Puntos<select id="ipt">${[1,2,3,5,8,13].map(n=>`<option>${n}</option>`).join('')}</select></label><button class="btn p" onclick="A.add()">Agregar</button></div></div>`;
+ const cap=a?`<div class="card"><b>Capacidad:</b> comprometidos ${sum(a.items)} pts · velocidad promedio histórica ${v||'sin datos'} pts ${v&&sum(a.items)>v*1.2?'<b style="color:var(--bad)">⚠ por encima de tu capacidad</b>':''}</div>`:'';
+ const bl=`<div class="card"><h2>Product Backlog (${S.backlog.length})</h2><div class="scroll"><table class="tbl"><tr><th>Actividad</th><th>Proyecto</th><th>Resp.</th><th>Pts</th><th></th></tr>${S.backlog.map(i=>`<tr><td>${esc(i.title)}</td><td>${esc(i.project)}</td><td>${esc(i.owner)}</td><td>${i.pts}</td><td>${a?`<button class="btn s" onclick="A.toSprint('${i.id}')">→ Sprint</button> `:''}<button class="btn s d" onclick="A.del('${i.id}')">✕</button></td></tr>`).join('')||'<tr><td colspan=5 class="mu">Vacío</td></tr>'}</table></div></div>`;
+ return (a?head(a):empty())+cap+form+bl}
+
+function chart(a){const days=wdays(a.start,a.end),n=days.length;if(n<2)return '';const t=sum(a.items)||1,W=640,H=240,p=34,x=i=>p+i*(W-2*p)/(n-1),y=v=>p+(1-v/t)*(H-2*p);
+ const ideal=days.map((d,i)=>`${x(i)},${y(t*(1-i/(n-1)))}`).join(' ');
+ const act_=days.map((d,i)=>d<=today()?[x(i),y(t-sum(a.items.filter(z=>z.doneAt&&z.doneAt<=d)))]:null).filter(Boolean);
+ return `<svg viewBox="0 0 ${W} ${H}"><line x1="${p}" y1="${H-p}" x2="${W-p}" y2="${H-p}" stroke="var(--bd)"/><line x1="${p}" y1="${p}" x2="${p}" y2="${H-p}" stroke="var(--bd)"/><polyline points="${ideal}" fill="none" stroke="var(--mu)" stroke-dasharray="5 4" stroke-width="2"/><polyline points="${act_.map(q=>q.join(',')).join(' ')}" fill="none" stroke="var(--pr)" stroke-width="3"/>${act_.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="var(--pr)"/>`).join('')}<text x="${p-6}" y="${p+4}" text-anchor="end" font-size="11" fill="var(--mu)">${t}</text><text x="${p-6}" y="${H-p+4}" text-anchor="end" font-size="11" fill="var(--mu)">0</text><text x="${p}" y="${H-10}" font-size="11" fill="var(--mu)">${days[0].slice(5)}</text><text x="${W-p}" y="${H-10}" text-anchor="end" font-size="11" fill="var(--mu)">${days[n-1].slice(5)}</text></svg><small>Línea punteada = ideal · línea verde = real (puntos restantes por día hábil)</small>`}
+
+function metrics(){const a=act();if(!a)return empty();const m={};a.items.forEach(i=>(m[i.project]=m[i.project]||[]).push(i));
+ return head(a)+`<div class="card"><h2>Burndown</h2>${chart(a)}</div><div class="card"><div class="row" style="justify-content:space-between"><h2>Avance por proyecto en este sprint</h2><button class="btn p" onclick="A.copy()">Copiar para Bi-nnova</button></div>${Object.entries(m).map(([p,l])=>{const pc=Math.round(sum(l.filter(i=>i.status=='done'))/sum(l)*100);return `<div style="margin:8px 0"><div class="row" style="justify-content:space-between"><span>${esc(p)}</span><b>${pc}%</b></div><div class="bar"><i style="width:${pc}%"></i></div></div>`}).join('')||'<p class="mu">Agrega actividades al sprint.</p>'}</div>`}
+
+function close_(){const a=act();if(!a)return empty();
+ const ta=(f,l,v,h)=>`<div class="card"><h2>${l}</h2><small>${h}</small><textarea oninput="A.note('${f}',this.value)">${esc(v)}</textarea></div>`;
+ const dn=a.items.filter(i=>i.status=='done');
+ return head(a)+`<div class="card"><h2>Sprint Review</h2><p class="mu">Incremento terminado (cumple tu Definición de Terminado):</p><ul>${dn.map(i=>`<li>${esc(i.title)} <small>· ${esc(i.project)}</small></li>`).join('')||'<li class="mu">Aún nada terminado</li>'}</ul></div>`
+ +ta('review','Retroalimentación de interesados','¿Qué dijeron del incremento? ¿Qué cambia en el backlog?',a.review)
+ +`<h2 style="margin:6px 2px">Retrospectiva</h2>`
+ +ta('bien','¿Qué salió bien?','',a.retro.bien)+ta('mejorar','¿Qué podemos mejorar?','',a.retro.mejorar)+ta('acc','Acciones concretas para el próximo sprint','',a.retro.acc)
+ +`<button class="btn p" onclick="A.close()">Cerrar sprint</button>`}
+
+function hist(){const c=closed();if(!c.length)return `<div class="card mu">Aún no hay sprints cerrados.</div>`;const mx=Math.max(...c.map(s=>Math.max(s.velocity,s.committed)),1);
+ return `<div class="card"><h2>Velocidad por sprint</h2><p class="mu">Promedio: <b>${avgVel()} pts</b> — úsalo como capacidad para planear el siguiente.</p>${c.map(s=>`<div style="margin:8px 0"><div class="row" style="justify-content:space-between"><span>${esc(s.name)} <small>${esc(s.dept)}</small></span><b>${s.velocity}/${s.committed} pts (${s.committed?Math.round(s.velocity/s.committed*100):0}%)</b></div><div class="bar"><i style="width:${s.velocity/mx*100}%"></i></div></div>`).join('')}</div>`
+ +c.slice().reverse().map(s=>`<div class="card"><h2>${esc(s.name)} <small>${s.start} → ${s.end}</small></h2><div>🎯 ${esc(s.goal)}</div><details><summary>Review y retrospectiva</summary><p><b>Review:</b> ${esc(s.review)||'—'}</p><p><b>Bien:</b> ${esc(s.retro.bien)||'—'}</p><p><b>Mejorar:</b> ${esc(s.retro.mejorar)||'—'}</p><p><b>Acciones:</b> ${esc(s.retro.acc)||'—'}</p></details></div>`).join('')}
+
+function proj(){const p=A.pj(),ST=['Pendiente','En curso','Hecho'],TN={g:'Positiva',n:'Neutral',r:'Preocupación'},ho=p.ms.filter(m=>m.st==2).length,c=t=>p.vw.filter(v=>v.tone==t).length;
+ const add=(k,ph)=>`<div class="row noprint" style="margin-top:8px">${ph}<button class="btn p" onclick="A.addp('${k}')">Agregar</button></div>`,x=(k,i)=>`<button class="btn s d noprint" onclick="A.rmp('${k}',${i})">✕</button>`;
+ return `<div class="row noprint" style="margin-bottom:12px">${S.projects.map(q=>`<button class="btn ${q.id==S.pid?'p':''}" onclick="A.pick('${q.id}')">${esc(q.name)}</button>`).join('')}<button class="btn" onclick="A.newProj()">＋ Nuevo proyecto</button></div>
+ ${p.note?`<div class="note">🔒 ${esc(p.note)}</div>`:''}
+ <div class="card"><div class="row" style="justify-content:space-between"><h2>${esc(p.name)}</h2><span class="row noprint"><button class="btn" onclick="A.tpl()">Cargar plantilla sugerida</button><button class="btn" onclick="A.renProj()">Renombrar</button><button class="btn d" onclick="A.delProj()">Eliminar</button><button class="btn" onclick="A.rep()">Copiar resumen</button><button class="btn p" onclick="print()">Imprimir / PDF</button></span></div>
+ <label class="mu" style="font-size:12px">Objetivo del proyecto</label><textarea style="min-height:50px" oninput="A.set('goal',this.value)">${esc(p.goal)}</textarea>
+ <div class="kpis" style="margin-top:10px"><div class="kpi"><small>Avance reportado</small><b>${p.pct}%</b></div><div class="kpi"><small>Hitos completados</small><b>${ho}/${p.ms.length}</b></div><div class="kpi"><small>Riesgos abiertos</small><b>${p.rk.length}</b></div><div class="kpi"><small>Opiniones</small><b>${p.vw.length}</b><small>${c('g')} pos · ${c('n')} neu · ${c('r')} prec.</small></div></div>
+ <input type="range" class="noprint" min="0" max="100" step="5" value="${p.pct}" style="width:100%;margin-top:10px" onchange="A.set('pct',this.value)"><div class="bar"><i style="width:${p.pct}%"></i></div></div>
+ <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+ <div class="card"><h2>Hitos</h2>${p.ms.map((m,i)=>`<div class="li"><span>${esc(m.t)}</span><span><button class="btn s" onclick="A.cyc(${i})">${ST[m.st]}</button> ${x('ms',i)}</span></div>`).join('')||'<p class="mu">Sin hitos.</p>'}${add('ms','<input id="mst" placeholder="Nuevo hito" size="26">')}</div>
+ <div class="card"><h2>Riesgos y bloqueos</h2>${p.rk.map((r,i)=>`<div class="li"><span>${esc(r.t)}</span>${x('rk',i)}</div>`).join('')||'<p class="mu">Sin riesgos.</p>'}${add('rk','<input id="rkt" placeholder="Riesgo o bloqueo" size="26">')}</div></div>
+ <div class="card"><h2>Puntos de vista sobre el avance</h2>${p.vw.map((v,i)=>`<div class="li"><span><b>${esc(v.who)}</b> <small>${esc(v.role)}</small> <span class="ch ${v.tone}">${TN[v.tone]}</span><br>${esc(v.t)}</span>${x('vw',i)}</div>`).join('')||'<p class="mu">Aún nadie ha opinado.</p>'}
+ ${add('vw','<label>Nombre<input id="vww" size="14"></label><label>Rol<input id="vwr" size="14" placeholder="Líder, usuario…"></label><label>Postura<select id="vto"><option value="g">Positiva</option><option value="n">Neutral</option><option value="r">Preocupación</option></select></label><label>Comentario<input id="vwt" size="34" placeholder="¿Qué opina del avance?"></label>')}</div>
+ <div class="card"><h2>Acuerdos y siguientes pasos</h2>${p.dc.map((d,i)=>`<div class="li"><span>${esc(d.t)} <small>· ${esc(d.who)||'s/r'} ${esc(d.due)}</small></span>${x('dc',i)}</div>`).join('')||'<p class="mu">Sin acuerdos.</p>'}${add('dc','<label>Acuerdo<input id="dct" size="30"></label><label>Responsable<input id="dcw" size="14"></label><label>Fecha<input id="dcd" type="date"></label>')}</div>`}
+function topics(){const t=A.tp(),TN={g:'Positiva',n:'Neutral',r:'Preocupación'},me=esc(ls(K+'-me')||'');
+ return `<div class="row noprint" style="margin-bottom:12px">${S.topics.map(q=>`<button class="btn ${q.id==t.id?'p':''}" onclick="A.pickT('${q.id}')">${esc(q.name)} <small>(${q.posts.length})</small></button>`).join('')}<button class="btn" onclick="A.newTopic()">＋ Nuevo tema</button></div>
+ <div class="card"><div class="row" style="justify-content:space-between"><h2>${esc(t.name)}</h2><span class="row noprint"><button class="btn" onclick="A.renTopic()">Renombrar</button><button class="btn d" onclick="A.delTopic()">Eliminar tema</button></span></div>
+ <label class="mu" style="font-size:12px">De qué trata este tema</label><textarea style="min-height:50px" oninput="A.tset('desc',this.value)">${esc(t.desc)}</textarea></div>
+ <div class="card"><h2>Opiniones (${t.posts.length})</h2>${t.posts.slice().reverse().map(v=>`<div class="li"><span><b>${esc(v.who)}</b> <small>${esc(v.role)} · ${esc(v.date)}</small> <span class="ch ${v.tone}">${TN[v.tone]||''}</span><br>${esc(v.t)}</span><span class="noprint"><button class="btn s" onclick="A.like('${v.id}')">👍 ${v.likes||0}</button> <button class="btn s d" onclick="A.delPost('${v.id}')">✕</button></span></div>`).join('')||'<p class="mu">Aún nadie ha opinado en este tema.</p>'}</div>
+ <div class="card noprint"><h2>Agregar mi opinión</h2><div class="row"><label>Nombre<input id="tw" size="16" value="${me}"></label><label>Rol<input id="tr" size="16" placeholder="Líder, usuario…"></label><label>Postura<select id="tto"><option value="g">Positiva</option><option value="n">Neutral</option><option value="r">Preocupación</option></select></label></div><label class="mu" style="display:block;margin:8px 0 2px;font-size:12px">Comentario</label><textarea id="tt" style="min-height:70px" placeholder="¿Qué opinas? ¿Qué propones?"></textarea><button class="btn p" style="margin-top:8px" onclick="A.post()">Publicar</button></div>`}
+
+function syncv(){
+ return `<div class="card"><h2>Compartir con el equipo</h2><p>Estado: <b>${DBU()?(ST.err||'☁ Conectado a la base de datos compartida'):'Solo en este navegador (nadie más ve tus cambios)'}</b></p>
+ <p class="mu">Los datos se guardan en este artefacto y los ve todo el que tenga acceso. Para que alguien pueda capturar y opinar, compártelo desde el menú de compartir con permiso de <b>Contributor</b> o superior. Con permiso solo de lectura, la persona ve los datos pero no puede modificarlos.</p>
+ <div class="row" style="margin-top:10px"><label>Tu nombre (se usa para firmar tus opiniones)<input size="24" value="${esc(ls(K+'-me')||'')}" onchange="A.me(this.value)"></label></div></div>
+ <div class="card"><div class="note">No captures información confidencial (casos del Comité de Ética, datos personales). Si dos personas editan al mismo tiempo, prevalece el último guardado. Usa <b>Exportar</b> para respaldar.</div></div>`}
+
+function R(){$('#nav').innerHTML=TABS.map(([k,n])=>`<button class="${S.tab==k?'on':''}" onclick="A.tab('${k}')">${n}</button>`).join('');
+ $('#v').innerHTML=({board,plan,proj,topics,metrics,close:close_,hist,sync:syncv}[S.tab]||board)();FD=0;ST.pending=0;status()}
+R();initDb();
+</script></body></html>
